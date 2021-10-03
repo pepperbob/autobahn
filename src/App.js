@@ -2,6 +2,19 @@ import React, { useEffect, useState } from "react";
 
 import "./styles.css";
 
+function Intro() {
+  return <div>
+    <p>This App uses the <a href="https://autobahn.api.bund.dev/" target="_blank">Autobahn GmbH API</a> to show you
+    completely random pictures of famous German highways. And just in case you want to visit the cam to make a selfie... well
+    it is pinpoint on the map so go ahead and find your direction.
+    </p>
+  </div>
+}
+
+function Footer() {
+  return <p>In case you want to know: find the source code on github.com.</p>
+}
+
 function ShowPoint({ coord }) {
   const key = "AIzaSyD0Su-2OBYHAkD621rPOnxQDogiUNV9x8I"
   const src = `https://www.google.com/maps/embed/v1/place?key=${key}&q=${coord.lat},${coord.long}`
@@ -20,15 +33,64 @@ function ShowImage({ img }) {
 function Autobahn() {
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState(false)
-  const [autobahn, setAutobahn] = useState({})
+  const [roads, setRoads] = useState([])
+  const [currentRoad, setCurrentRoad] = useState("")
+
+  const pickRoad = () => {
+    setCurrentRoad(roads[Math.floor(Math.random() * roads.length)])
+  }
+
+  const pickRoadClickHandler = e => {
+    e.stopPropagation();
+    pickRoad();
+  }
+
+  useEffect(() => {
+    setLoading(true)
+    fetch("https://verkehr.autobahn.de/o/autobahn/")
+      .then(r => r.json())
+      .then(a => {
+        setRoads(a.roads)
+        setLoading(false);
+      })
+      .catch(err => setErr(err))
+  }, [])
+
+  useEffect(() => pickRoad(), [roads])
+
+  const bahnComponent = <>
+    <div>
+      <p>
+        This random Autobahn is called "{currentRoad}".
+        If this is unlikeable, <a href="#" onClick={pickRoadClickHandler}>you might be lucky next time</a>.
+      </p>
+    </div>
+
+    <CamView autobahnId={currentRoad}></CamView>
+  </>
+
+  if (loading)
+    return <div>Loading Autobahn...</div>
+  else if (!!err) {
+    return <div>Sorry... but {err}</div>
+  }
+  else {
+    return bahnComponent
+  }
+}
+
+function CamView(props) {
+  const [loading, setLoading] = useState(false)
+  const [err, setErr] = useState(false)
+  const [cam, setCam] = useState()
+
 
   const findCam = () => {
     setLoading(true)
-    fetchWebcam("A3")
+    fetchWebcam(props.autobahnId)
       .then(bahn => {
-        console.log(bahn)
         setLoading(false);
-        setAutobahn(bahn);
+        setCam(bahn);
       })
       .catch(e => {
         setLoading(false)
@@ -36,34 +98,51 @@ function Autobahn() {
       })
   }
 
-  useEffect(() => findCam(), []);
+  const findCamClickHandler = e => {
+    console.log(e)
+    e.stopPropagation();
+    findCam();
+  }
+
+  useEffect(() => findCam(), [props.autobahnId]);
+
 
   if (loading) {
     return (
-      <div>We're loading...</div>
+      <div>We're loading... {props.autobahnId}</div>
     )
   } else if (!!err) {
     return (
       <div>Bad Stuff happened :/ ({err})</div>
     )
-  } else if (!!autobahn?.cam) {
+  } else if (!!cam?.cam) {
     return (
       <>
-        <div>Von {autobahn.total} Cams, siehst du: {autobahn.cam.title}</div>
+        <div>
+          <p>
+            The cam you see is at "{cam.cam.title}: {cam.cam.subtitle}".
+        There are {cam.total} cams deployed - if this one looks boring to you <a href="#" onClick={findCamClickHandler}>just switch to a different one.</a>
 
-        <div class="row-container">
-          <ShowImage img={autobahn.cam.imageurl} />
-          <ShowPoint coord={autobahn.cam.coordinate} />
+          {
+            !!cam.cam.linkurl ?
+             <p>There is also a <a href={cam.cam.linkurl} target="_blank">video feed</a> available!!</p>
+              : <></>
+          }
+        </p>
         </div>
-        <div>{autobahn.cam.subtitle}</div>
-        <button onClick={findCam}>Next please!</button>
-        <div>{autobahn.cam.linkurl}</div>
+
+        <div className="row-container">
+          <ShowImage img={cam.cam.imageurl} />
+          <ShowPoint coord={cam.cam.coordinate} />
+        </div>
+
       </>
     )
   } else {
-    return <div>WHAT?!?!</div>
+    return <div>Sorry, no Cams deployed on {props.autobahnId}</div>
   }
 }
+
 
 function fetchWebcam(autobahnId) {
   return fetch(`https://verkehr.autobahn.de/o/autobahn/${autobahnId}/services/webcam`)
@@ -80,7 +159,9 @@ export default function App() {
     <>
       <div className="App">
         <h1>Autobahn!</h1>
+        <Intro />
         <Autobahn />
+        <Footer />
       </div>
     </>
   );

@@ -16,4 +16,5 @@ img, iframe {
   justify-content: space-evenly;
   align-items: stretch;
   gap: 10px;
+  padding-top: 10px;
 }
