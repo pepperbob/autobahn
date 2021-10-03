@@ -4,7 +4,7 @@ import "./styles.css";
 function Intro() {
   return <div>
     <p>This App uses the <a href="https://autobahn.api.bund.dev/" target="_blank">Autobahn GmbH API</a> to show you
-    completely random pictures of famous German highways. And just in case you want take a selfie... well
+    completely random pictures of famous German highways. And just in case you want to take a selfie... well
     it is pinpointed on the map so go ahead and find your direction.
     </p>
   </div>
