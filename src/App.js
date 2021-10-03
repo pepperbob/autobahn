@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from "react";
-
 import "./styles.css";
 
 function Intro() {
   return <div>
     <p>This App uses the <a href="https://autobahn.api.bund.dev/" target="_blank">Autobahn GmbH API</a> to show you
-    completely random pictures of famous German highways. And just in case you want to visit the cam to make a selfie... well
-    it is pinpoint on the map so go ahead and find your direction.
+    completely random pictures of famous German highways. And just in case you want take a selfie... well
+    it is pinpointed on the map so go ahead and find your direction.
     </p>
   </div>
 }
 
 function Footer() {
-  return <p>In case you want to know: find the source code on github.com.</p>
+  return <p>In case you need to know:
+    find the source code on <a href="https://github.com/pepperbob/autobahn">github.com</a>.</p>
 }
 
 function ShowPoint({ coord }) {
@@ -62,7 +62,7 @@ function Autobahn() {
     <div>
       <p>
         This random Autobahn is called "{currentRoad}".
-        If this is unlikeable, <a href="#" onClick={pickRoadClickHandler}>you might be lucky next time</a>.
+        I you don't like it, <a href="#" onClick={pickRoadClickHandler}>maybe you are lucky next time</a>.
       </p>
     </div>
 
@@ -99,7 +99,6 @@ function CamView(props) {
   }
 
   const findCamClickHandler = e => {
-    console.log(e)
     e.stopPropagation();
     findCam();
   }
